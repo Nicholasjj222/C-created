@@ -1,0 +1,44 @@
+using System;
+using System.Text.RegularExpressions;
+
+class PasswordStrengthAnalyzer
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("=== Password Strength Analyzer ===");
+        Console.Write("Enter a password: ");
+        string password = Console.ReadLine();
+
+        int score = CalculateScore(password);
+        string strength = GetStrength(score);
+
+        Console.WriteLine($"\nScore: {score}/100");
+        Console.WriteLine($"Strength: {strength}");
+    }
+
+    static int CalculateScore(string password)
+    {
+        int score = 0;
+
+        if (password.Length >= 8) score += 20;
+        if (password.Length >= 12) score += 10;
+
+        if (Regex.IsMatch(password, @"[a-z]")) score += 15;
+        if (Regex.IsMatch(password, @"[A-Z]")) score += 15;
+        if (Regex.IsMatch(password, @"\d")) score += 15;
+        if (Regex.IsMatch(password, @"[\W_]")) score += 15;
+
+        // Penalty for common patterns
+        if (password.ToLower().Contains("123") || password.ToLower().Contains("password"))
+            score -= 20;
+
+        return Math.Max(0, Math.Min(score, 100));
+    }
+
+    static string GetStrength(int score)
+    {
+        if (score < 40) return "Weak ";
+        if (score < 70) return "Moderate ";
+        return "Strong ";
+    }
+}
