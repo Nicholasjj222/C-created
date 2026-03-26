@@ -1,0 +1,81 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+
+class SmartFileOrganizer
+{
+    static Dictionary<string, string> fileCategories = new Dictionary<string, string>()
+    {
+        { ".jpg", "Images" }, { ".png", "Images" }, { ".jpeg", "Images" },
+        { ".mp4", "Videos" }, { ".mkv", "Videos" },
+        { ".pdf", "Documents" }, { ".docx", "Documents" }, { ".txt", "Documents" },
+        { ".cs", "Code" }, { ".js", "Code" }, { ".py", "Code" }
+    };
+
+    static void Main(string[] args)
+    {
+        Console.WriteLine("=== Smart File Organizer ===");
+
+        string path;
+        if (args.Length > 0)
+        {
+            path = args[0];
+        }
+        else
+        {
+            Console.Write("Enter folder path: ");
+            path = Console.ReadLine();
+        }
+
+        if (!Directory.Exists(path))
+        {
+            Console.WriteLine("Invalid path.");
+            return;
+        }
+
+        OrganizeFiles(path);
+        Console.WriteLine("Done organizing files!");
+    }
+
+    static void OrganizeFiles(string path)
+    {
+        var files = Directory.GetFiles(path);
+
+        foreach (var file in files)
+        {
+            string extension = Path.GetExtension(file).ToLower();
+            string category = fileCategories.ContainsKey(extension)
+                ? fileCategories[extension]
+                : "Others";
+
+            string categoryPath = Path.Combine(path, category);
+
+            if (!Directory.Exists(categoryPath))
+                Directory.CreateDirectory(categoryPath);
+
+            string fileName = Path.GetFileName(file);
+            string destinationPath = Path.Combine(categoryPath, fileName);
+
+            destinationPath = GetUniqueFileName(destinationPath);
+
+            File.Move(file, destinationPath);
+            Console.WriteLine($"Moved: {fileName} -> {category}");
+        }
+    }
+
+    static string GetUniqueFileName(string path)
+    {
+        int count = 1;
+        string dir = Path.GetDirectoryName(path);
+        string fileName = Path.GetFileNameWithoutExtension(path);
+        string ext = Path.GetExtension(path);
+
+        while (File.Exists(path))
+        {
+            path = Path.Combine(dir, $"{fileName}({count}){ext}");
+            count++;
+        }
+
+        return path;
+    }
+}
